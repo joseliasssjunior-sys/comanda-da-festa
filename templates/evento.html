@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.nome }}{% endblock %}
+{% block content %}
+  <div class="backbar">
+    <a class="backbtn" href="{{ url_for('home') }}">← voltar</a>
+    <div class="headactions">
+      <a class="button btn-ghost btn-icon" href="{{ url_for('editar_evento', evento_id=ev.id) }}" title="Editar evento">✏️</a>
+      <form method="post" action="{{ url_for('excluir_evento', evento_id=ev.id) }}" onsubmit="return confirm('Excluir este evento? Essa ação não pode ser desfeita.');" style="display:inline;">
+        <button class="btn-ghost btn-icon btn-danger" type="submit" title="Excluir evento">🗑️</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="eventname">{{ ev.nome }}</div>
+  <div class="eventdate">criado em {{ ev.criado }}</div>
+
+  <div class="progresswrap">
+    <div class="toprow">
+      <span>Arrecadado</span>
+      <b>R$ {{ "%.2f"|format(pagos * valor_por_pessoa) }} de R$ {{ "%.2f"|format(ev.valor_total) }}</b>
+    </div>
+    <div class="progressbar"><div class="fill" style="width:{{ pct }}%"></div></div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat"><span class="val">R$ {{ "%.2f"|format(valor_por_pessoa) }}</span><span class="lbl">por pessoa</span></div>
+    <div class="stat"><span class="val">{{ pagos }}/{{ total }}</span><span class="lbl">pagos</span></div>
+  </div>
+
+  <div class="shareGrid">
+    <a class="button btn-whats" id="wppEvento" href="#" onclick="compartilharEvento(); return false;">💬 Compartilhar no WhatsApp</a>
+    <button class="btn-ghost btn-icon" onclick="copiarLink()" title="Copiar link">🔗 Copiar link</button>
+  </div>
+
+  <hr class="rule">
+  <h2>Participantes</h2>
+  {% if total == 0 %}
+    <div class="empty">Nenhum participante.</div>
+  {% else %}
+    {% for p in participantes %}
+      <div class="person {{ 'paid' if p.pago else '' }}">
+        <div>
+          <div class="name">{{ p.nome }}</div>
+          <div class="amt">R$ {{ "%.2f"|format(valor_por_pessoa) }} · <span class="tag {{ 'paid' if p.pago else 'pending' }}">{{ 'pago' if p.pago else 'pendente' }}</span></div>
+          {% if p.pago and p.pago_em %}<div class="paidwhen">pago em {{ p.pago_em }}</div>{% endif %}
+        </div>
+        <div class="actions">
+          <a class="button btn-ghost btn-small" href="{{ url_for('pix_pessoa', evento_id=ev.id, pessoa_id=p.pessoa_id) }}">Pix</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+<script>
+  const linkEvento = {{ link_evento|tojson }};
+  const nomeEvento = {{ ev.nome|tojson }};
+  const valorPessoa = {{ valor_por_pessoa }};
+
+  function copiarLink(){
+    navigator.clipboard.writeText(linkEvento).then(
+      () => alert('Link copiado!'),
+      () => prompt('Copie o link manualmente:', linkEvento)
+    );
+  }
+  function compartilharEvento(){
+    const msg = `🎉 *${nomeEvento}*\n\nRateio: R$ ${valorPessoa.toFixed(2)} por pessoa\n\nConfira e pague pelo link:\n${linkEvento}`;
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  }
+</script>
+{% endblock %}

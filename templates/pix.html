@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Pagamento — {{ pessoa.nome }}{% endblock %}
+{% block content %}
+  <div class="backbar">
+    <a class="backbtn" href="{{ url_for('ver_evento', evento_id=ev.id) }}">← voltar</a>
+  </div>
+
+  <h2>{{ pessoa.nome }} — R$ {{ "%.2f"|format(valor) }}</h2>
+
+  <div id="qrbox">
+    <img src="data:image/png;base64,{{ qr_b64 }}" width="220" height="220" alt="QR code Pix">
+  </div>
+
+  <div class="pixcode" id="pixPayload">{{ payload }}</div>
+
+  <div class="btnrow">
+    <button class="btn-ghost btn-small" onclick="copiarPix()" style="width:100%;">Copiar código</button>
+  </div>
+
+  <form method="post" action="{{ url_for('marcar_pago', evento_id=ev.id, pessoa_id=pessoa.pessoa_id) }}">
+    <div class="btnrow">
+      <button class="btn-primary btn-small" type="submit" style="width:100%;" {% if pessoa.pago %}disabled{% endif %}>
+        {{ 'Já foi pago ✓' if pessoa.pago else 'Já paguei' }}
+      </button>
+    </div>
+  </form>
+
+  {% if not pessoa.pago %}
+    <div class="btnrow">
+      <a class="button btn-whats btn-small" style="width:100%;"
+         href="https://wa.me/{{ '55' ~ pessoa.fone|replace(' ','')|replace('-','')|replace('(','')|replace(')','') if pessoa.fone else '' }}?text={{ ('Oii ' ~ pessoa.nome ~ '! 🎉 Só lembrando da comanda de ' ~ ev.nome ~ ' — sua parte é R$ ' ~ '%.2f'|format(valor) ~ '. Pague aqui: ' ~ link_evento)|urlencode }}"
+         target="_blank">💬 Cobrar no WhatsApp</a>
+    </div>
+  {% endif %}
+
+  <div class="btnrow">
+    <a class="button btn-ghost btn-small" style="width:100%;" href="{{ url_for('ver_evento', evento_id=ev.id) }}">Fechar</a>
+  </div>
+
+<script>
+  function copiarPix(){
+    const texto = document.getElementById('pixPayload').textContent;
+    navigator.clipboard.writeText(texto).then(
+      () => alert('Código Pix copiado!'),
+      () => prompt('Copie o código manualmente:', texto)
+    );
+  }
+</script>
+{% endblock %}

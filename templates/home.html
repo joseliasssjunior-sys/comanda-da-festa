@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Comanda da Festa{% endblock %}
+{% block content %}
+  <div class="homebtns">
+    <a class="button btn-primary btn-big" href="{{ url_for('pessoas') }}">👤 Cadastrar Pessoas</a>
+    <a class="button btn-primary btn-big" href="{{ url_for('novo_evento') }}">🎉 Cadastrar Evento</a>
+  </div>
+  <hr class="rule">
+  <h2>Eventos criados</h2>
+
+  {% if resumo|length == 0 %}
+    <div class="empty">Nenhum evento criado ainda.</div>
+  {% else %}
+    {% for r in resumo %}
+      <a class="eventcard" href="{{ url_for('ver_evento', evento_id=r.ev.id) }}">
+        <div class="n">{{ r.ev.nome }}{% if r.pct == 100 and r.total > 0 %} ✅{% endif %}</div>
+        <div class="m">{{ r.ev.criado }} · {{ r.total }} pessoas · {{ r.pagos }} pagos</div>
+        <div class="mini"><div class="f" style="width:{{ r.pct }}%"></div></div>
+      </a>
+    {% endfor %}
+  {% endif %}
+{% endblock %}

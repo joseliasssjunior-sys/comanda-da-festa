@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Cadastrar Pessoas{% endblock %}
+{% block content %}
+  <div class="backbar"><a class="backbtn" href="{{ url_for('home') }}">← voltar</a></div>
+  <h2>Cadastrar Pessoas</h2>
+
+  <form method="post" action="{{ url_for('pessoas') }}">
+    <input type="text" name="nome" placeholder="Nome da pessoa" required>
+    <div class="row">
+      <div style="flex:2"><input type="text" name="fone" placeholder="WhatsApp (opcional, com DDD)"></div>
+      <div style="flex:1"><button class="btn-primary" type="submit" style="height:100%;">+ Adicionar</button></div>
+    </div>
+  </form>
+
+  {% if pessoas|length == 0 %}
+    <div class="empty">Ninguém cadastrado ainda.</div>
+  {% else %}
+    {% for p in pessoas %}
+      <div class="checkrow">
+        <label style="cursor:default;">{{ p.nome }} {% if p.fone %}<span class="phone">· {{ p.fone }}</span>{% endif %}</label>
+        <form method="post" action="{{ url_for('excluir_pessoa', pessoa_id=p.id) }}" onsubmit="return confirm('Excluir o cadastro de {{ p.nome }}?');">
+          <button class="rmbtn" type="submit" title="Excluir cadastro">✕</button>
+        </form>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endblock %}
